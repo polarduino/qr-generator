@@ -6,11 +6,11 @@
     <title>Generator Wizytówek QR z Logo</title>
     <!-- Biblioteka qr-code-styling z obsługą logo -->
     <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
-    <style>
+<style>
         body {
             font-family: Arial, sans-serif;
             max-width: 550px;
-            margin: 30px auto;
+            margin: 20px auto;
             padding: 20px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             border-radius: 8px;
@@ -53,20 +53,31 @@
         #download-btn:hover {
             background-color: #218838;
         }
-        /* Wyśrodkowanie kontenera oraz samych elementów wewnątrz */
+
+        /* Kontener główny sekcji wyniku */
         #qrcode-container {
             margin-top: 25px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;  /* Wyśrodkowanie w poziomie */
-            justify-content: center;
             width: 100%;
+            text-align: center;
         }
+
+        /* Kontener samego kodu QR */
         #qrcode {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-top: 15px;
+            display: block;
+            width: 100%;
+            text-align: center;
+            margin: 15px auto;
+        }
+
+        /* KLUCZOWA POPRAWKA DLA FIREFOX MOBILE:
+           Wymuszenie centrowania elementu SVG/Canvas generowanego przez bibliotekę */
+        #qrcode svg, 
+        #qrcode canvas {
+            display: block !important;
+            margin: 0 auto !important;
+            float: none !important;
+            max-width: 100%;
+            height: auto;
         }
     </style>
 </head>
