@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Wizytówek QR z Logo</title>
+    <!-- Biblioteka qr-code-styling z obsługą logo -->
+    <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 550px;
+            margin: 30px auto;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        .form-group {
+            margin-bottom: 12px;
+        }
+        label {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #download-btn {
+            background-color: #28a745;
+            display: none;
+        }
+        #download-btn:hover {
+            background-color: #218838;
+        }
+        #qrcode-container {
+            margin-top: 25px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Generator Wizytówki QR z Logo</h2>
+    
+    <div class="form-group">
+        <label for="firstName">Imię:</label>
+        <input type="text" id="firstName" placeholder="Jan">
+    </div>
+    
+    <div class="form-group">
+        <label for="lastName">Nazwisko:</label>
+        <input type="text" id="lastName" placeholder="Kowalski">
+    </div>
+
+    <div class="form-group">
+        <label for="org">Firma / Organizacja:</label>
+        <input type="text" id="org" placeholder="Moja Firma Sp. z o.o.">
+    </div>
+    
+    <div class="form-group">
+        <label for="phone">Telefon:</label>
+        <input type="tel" id="phone" placeholder="+48123456789">
+    </div>
+    
+    <div class="form-group">
+        <label for="email">E-mail:</label>
+        <input type="email" id="email" placeholder="jan.kowalski@example.com">
+    </div>
+
+    <div class="form-group">
+        <label for="url">Strona WWW:</label>
+        <input type="url" id="url" placeholder="https://example.com">
+    </div>
+
+    <div class="form-group">
+        <label for="logoInput">Logo firmowe (PNG / JPG):</label>
+        <input type="file" id="logoInput" accept="image/*">
+    </div>
+
+    <button onclick="generateQR()">Generuj Kod QR z Logo</button>
+    <button id="download-btn" onclick="downloadQR()">Pobierz Kod QR (PNG)</button>
+
+    <div id="qrcode-container">
+        <div id="qrcode"></div>
+    </div>
+
+    <script>
+        let qrCode = null;
+
+        function generateQR() {
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const org = document.getElementById('org').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const url = document.getElementById('url').value.trim();
+            const logoFile = document.getElementById('logoInput').files[0];
+
+            if (!firstName && !lastName) {
+                alert('Wprowadź przynajmniej imię lub nazwisko!');
+                return;
+            }
+
+            // Treść vCard 3.0
+            const vCardData = 
+`BEGIN:VCARD
+VERSION:3.0
+N:${lastName};${firstName};;;
+FN:${firstName} ${lastName}`.trim() +
+(org ? `\nORG:${org}` : '') +
+(phone ? `\nTEL;TYPE=CELL:${phone}` : '') +
+(email ? `\nEMAIL:${email}` : '') +
+(url ? `\nURL:${url}` : '') +
+`\nEND:VCARD`;
+
+            // Odczyt pliku z logo (jeśli wybrano)
+            if (logoFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    renderQRCode(vCardData, e.target.result);
+                };
+                reader.readAsDataURL(logoFile);
+            } else {
+                renderQRCode(vCardData, null);
+            }
+        }
+
+        function renderQRCode(data, logoUrl) {
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = '';
+
+            qrCode = new QRCodeStyling({
+                width: 300,
+                height: 300,
+                type: "svg",
+                data: data,
+                image: logoUrl,
+                dotsOptions: {
+                    color: "#000000",
+                    type: "rounded" // Styl kropek: rounded, dots, classy, square
+                },
+                backgroundOptions: {
+                    color: "#ffffff",
+                },
+                imageOptions: {
+                    crossOrigin: "anonymous",
+                    margin: 5,
+                    imageSize: 0.3 // Przeskalowanie logo (30% szerokości kodu)
+                },
+                qrOptions: {
+                    errorCorrectionLevel: "H" // Poziom H (High) wymagany przy zasłanianiu środka logo!
+                }
+            });
+
+            qrCode.append(qrContainer);
+            document.getElementById('download-btn').style.display = 'block';
+        }
+
+        function downloadQR() {
+            if (qrCode) {
+                qrCode.download({ name: "wizytowka_qr", extension: "png" });
+            }
+        }
+    </script>
+</body>
+</html>
