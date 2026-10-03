@@ -1,2 +1,3 @@
-# qr-vcard-generator-with-logo.html
+# QRCode vcard generator with logo.
 QR Vcard generator with logo.
+
