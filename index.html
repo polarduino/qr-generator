@@ -14,6 +14,7 @@
             padding: 20px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             border-radius: 8px;
+            background-color: #f9f9f9;
         }
         .form-group {
             margin-bottom: 12px;
@@ -29,6 +30,7 @@
             box-sizing: border-box;
             border: 1px solid #ccc;
             border-radius: 4px;
+            background-color: #fff;
         }
         button {
             width: 100%;
@@ -51,9 +53,20 @@
         #download-btn:hover {
             background-color: #218838;
         }
+        /* Wyśrodkowanie kontenera oraz samych elementów wewnątrz */
         #qrcode-container {
             margin-top: 25px;
-            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;  /* Wyśrodkowanie w poziomie */
+            justify-content: center;
+            width: 100%;
+        }
+        #qrcode {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 15px;
         }
     </style>
 </head>
@@ -97,10 +110,10 @@
     </div>
 
     <button onclick="generateQR()">Generuj Kod QR z Logo</button>
-    <button id="download-btn" onclick="downloadQR()">Pobierz Kod QR (PNG)</button>
 
     <div id="qrcode-container">
         <div id="qrcode"></div>
+        <button id="download-btn" onclick="downloadQR()">Pobierz Kod QR (PNG)</button>
     </div>
 
     <script>
@@ -132,7 +145,6 @@ FN:${firstName} ${lastName}`.trim() +
 (url ? `\nURL:${url}` : '') +
 `\nEND:VCARD`;
 
-            // Odczyt pliku z logo (jeśli wybrano)
             if (logoFile) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
@@ -156,7 +168,7 @@ FN:${firstName} ${lastName}`.trim() +
                 image: logoUrl,
                 dotsOptions: {
                     color: "#000000",
-                    type: "rounded" // Styl kropek: rounded, dots, classy, square
+                    type: "rounded"
                 },
                 backgroundOptions: {
                     color: "#ffffff",
@@ -164,10 +176,10 @@ FN:${firstName} ${lastName}`.trim() +
                 imageOptions: {
                     crossOrigin: "anonymous",
                     margin: 5,
-                    imageSize: 0.3 // Przeskalowanie logo (30% szerokości kodu)
+                    imageSize: 0.3
                 },
                 qrOptions: {
-                    errorCorrectionLevel: "H" // Poziom H (High) wymagany przy zasłanianiu środka logo!
+                    errorCorrectionLevel: "H"
                 }
             });
 
