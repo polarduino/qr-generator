@@ -127,82 +127,89 @@
         <button id="download-btn" onclick="downloadQR()">Pobierz Kod QR (PNG)</button>
     </div>
 
-    <script>
-        let qrCode = null;
+<script>
+    let qrCode = null;
 
-        function generateQR() {
-            const firstName = document.getElementById('firstName').value.trim();
-            const lastName = document.getElementById('lastName').value.trim();
-            const org = document.getElementById('org').value.trim();
-            const phone = document.getElementById('phone').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const url = document.getElementById('url').value.trim();
-            const logoFile = document.getElementById('logoInput').files[0];
+    // Escapowanie wartości tekstowych vCard (N, FN, ORG)
+    function esc(s) {
+        return s.replace(/\\/g, '\\\\')
+                .replace(/\r?\n/g, '\\n')
+                .replace(/;/g, '\\;')
+                .replace(/,/g, '\\,');
+    }
+    // Pola bez znaczenia strukturalnego: tylko usunięcie łamania linii
+    function flat(s) {
+        return s.replace(/[\r\n]+/g, ' ');
+    }
 
-            if (!firstName && !lastName) {
-                alert('Wprowadź przynajmniej imię lub nazwisko!');
-                return;
-            }
+    function generateQR() {
+        const firstName = document.getElementById('firstName').value.trim();
+        const lastName  = document.getElementById('lastName').value.trim();
+        const org   = document.getElementById('org').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const url   = document.getElementById('url').value.trim();
+        const logoFile = document.getElementById('logoInput').files[0];
 
-            // Treść vCard 3.0
-            const vCardData = 
-`BEGIN:VCARD
-VERSION:3.0
-N:${lastName};${firstName};;;
-FN:${firstName} ${lastName}`.trim() +
-(org ? `\nORG:${org}` : '') +
-(phone ? `\nTEL;TYPE=CELL:${phone}` : '') +
-(email ? `\nEMAIL:${email}` : '') +
-(url ? `\nURL:${url}` : '') +
-`\nEND:VCARD`;
-
-            if (logoFile) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    renderQRCode(vCardData, e.target.result);
-                };
-                reader.readAsDataURL(logoFile);
-            } else {
-                renderQRCode(vCardData, null);
-            }
+        if (!firstName && !lastName) {
+            alert('Wprowadź przynajmniej imię lub nazwisko!');
+            return;
         }
 
-        function renderQRCode(data, logoUrl) {
-            const qrContainer = document.getElementById('qrcode');
-            qrContainer.innerHTML = '';
+        const fullName = [firstName, lastName].filter(Boolean).join(' ');
 
-            qrCode = new QRCodeStyling({
-                width: 300,
-                height: 300,
-                type: "svg",
-                data: data,
-                image: logoUrl,
-                dotsOptions: {
-                    color: "#000000",
-                    type: "rounded"
-                },
-                backgroundOptions: {
-                    color: "#ffffff",
-                },
-                imageOptions: {
-                    crossOrigin: "anonymous",
-                    margin: 5,
-                    imageSize: 0.3
-                },
-                qrOptions: {
-                    errorCorrectionLevel: "H"
-                }
-            });
+        const lines = [
+            'BEGIN:VCARD',
+            'VERSION:3.0',
+            `N:${esc(lastName)};${esc(firstName)};;;`,
+            `FN:${esc(fullName)}`
+        ];
+        if (org)   lines.push(`ORG:${esc(org)}`);
+        if (phone) lines.push(`TEL;TYPE=CELL:${flat(phone)}`);
+        if (email) lines.push(`EMAIL;TYPE=INTERNET:${flat(email)}`);
+        if (url)   lines.push(`URL:${flat(url)}`);
+        lines.push('END:VCARD');
 
-            qrCode.append(qrContainer);
-            document.getElementById('download-btn').style.display = 'block';
+        const vCardData = lines.join('\r\n');
+
+        if (logoFile) {
+            const reader = new FileReader();
+            reader.onload = e => renderQRCode(vCardData, e.target.result);
+            reader.readAsDataURL(logoFile);
+        } else {
+            renderQRCode(vCardData, undefined);
         }
+    }
 
-        function downloadQR() {
-            if (qrCode) {
-                qrCode.download({ name: "wizytowka_qr", extension: "png" });
-            }
+    function renderQRCode(data, logoUrl) {
+        const qrContainer = document.getElementById('qrcode');
+        qrContainer.innerHTML = '';
+
+        qrCode = new QRCodeStyling({
+            width: 800,
+            height: 800,
+            type: "svg",
+            data: data,
+            image: logoUrl,
+            dotsOptions: { color: "#000000", type: "rounded" },
+            backgroundOptions: { color: "#ffffff" },
+            imageOptions: {
+                crossOrigin: "anonymous",
+                margin: 5,
+                imageSize: 0.25
+            },
+            qrOptions: { errorCorrectionLevel: "H" }
+        });
+
+        qrCode.append(qrContainer);
+        document.getElementById('download-btn').style.display = 'block';
+    }
+
+    function downloadQR() {
+        if (qrCode) {
+            qrCode.download({ name: "wizytowka_qr", extension: "png" });
         }
-    </script>
+    }
+</script>
 </body>
 </html>
